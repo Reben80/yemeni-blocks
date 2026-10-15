@@ -38,7 +38,7 @@ body:has(.overlay:not([hidden])){overflow:hidden}
   color-scheme:light;
   --paper:#f6f4ef; --panel:#ffffff; --ink:#15161a; --muted:#64666d; --line:#d9d6ce;
   --cell:#ebe8e0; --gridline:#d3cfc4; --edge:#15161a;
-  --red:#d7263d; --yellow:#f4c430; --blue:#1e4d9b; --white:#fbfbf8; --brick-edge:#15161a;
+  --red:#d7263d; --yellow:#f4c430; --blue:#1e4d9b; --white:#fbfbf8; --brick-edge:#15161a; --desk:#e6e1d6;
   --ok:#1f7a4d; --bad:#c2410c; --focus:#1e4d9b;
   --lv1:#f4c430; --lv2:#1e4d9b; --lv3:#d7263d; --lv4:#15161a;
   --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
@@ -48,12 +48,12 @@ body:has(.overlay:not([hidden])){overflow:hidden}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#141518; --panel:#1c1d21; --ink:#ecebe6; --muted:#9a9ca3; --line:#33353b;
   --cell:#26272c; --gridline:#34363c; --edge:#ecebe6;
-  --white:#f2f1ec; --brick-edge:#0b0b0d; --ok:#4ade80; --bad:#fb923c; --focus:#7aa7ff; --lv4:#ecebe6;
+  --white:#f2f1ec; --brick-edge:#0b0b0d; --ok:#4ade80; --bad:#fb923c; --focus:#7aa7ff; --lv4:#ecebe6; --desk:#0e0f12;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#141518; --panel:#1c1d21; --ink:#ecebe6; --muted:#9a9ca3; --line:#33353b;
   --cell:#26272c; --gridline:#34363c; --edge:#ecebe6;
-  --white:#f2f1ec; --brick-edge:#0b0b0d; --ok:#4ade80; --bad:#fb923c; --focus:#7aa7ff; --lv4:#ecebe6;
+  --white:#f2f1ec; --brick-edge:#0b0b0d; --ok:#4ade80; --bad:#fb923c; --focus:#7aa7ff; --lv4:#ecebe6; --desk:#0e0f12;
   color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
@@ -155,6 +155,23 @@ textarea{width:100%;min-height:80px;font:inherit;border:1.5px solid var(--line);
 .sum b{display:block;font-family:var(--display);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
 .sum span{font-size:12.5px;color:var(--muted);display:block}
 .note{font-size:12.5px;color:var(--muted)}
+/* Zine: the same card, set as one printed sheet. The workbench is unchanged until this is on. */
+.zinefoot{display:none}
+body.zine{background:var(--desk)}
+body.zine .wrap{max-width:760px;margin:28px auto 40px;background:var(--paper);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--ink);padding:28px max(28px,env(safe-area-inset-right,0px)) 18px max(28px,env(safe-area-inset-left,0px))}
+body.zine .main{grid-template-columns:minmax(0,1fr);max-width:600px;margin-inline:auto}
+body.zine .boardcol{margin-inline:auto}
+body.zine .panel{background:transparent;border:0;border-radius:0;padding:4px 0 0;box-shadow:none}
+body.zine .bench{display:none}
+body.zine .zinefoot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px;padding-top:14px;border-top:2px solid var(--ink);font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+body.zine .zinefoot b{font-weight:500}
+@media (max-width:640px){body.zine .wrap{margin:12px auto 28px;padding:16px max(14px,env(safe-area-inset-right,0px)) 12px max(14px,env(safe-area-inset-left,0px));box-shadow:4px 4px 0 var(--ink)}}
+@media print{
+  body.zine{background:#fff}
+  body.zine .wrap{box-shadow:none;border:0;margin:0;max-width:none}
+  body.zine .topbtns,body.zine .under,body.zine .panel .row,body.zine .zinefoot button,body.zine .skip{display:none}
+  .brick,.lvlbar,.c0,.c1,.c2,.c3,.brand .mark,.brand .mark i{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
 </style>
 </head>
 <body>
@@ -166,7 +183,8 @@ textarea{width:100%;min-height:80px;font:inherit;border:1.5px solid var(--line);
       <button class="btn" id="prevBtn" aria-label="Previous card">←</button>
       <button class="btn" id="pickBtn">All cards</button>
       <button class="btn" id="nextBtn" aria-label="Next card">→</button>
-      <button class="btn" id="logBtn">Playtest log</button>
+      <button class="btn" id="zineBtn" type="button" aria-pressed="false" aria-label="Open zine mode">Zine</button>
+      <button class="btn bench" id="logBtn">Playtest log</button>
       <button class="btn" id="themeBtn" type="button" aria-label="Switch to dark theme">Dark</button>
     </div>
   </header>
@@ -175,7 +193,7 @@ textarea{width:100%;min-height:80px;font:inherit;border:1.5px solid var(--line);
     <section class="boardcol" aria-label="Board">
       <div class="cardhead"><div class="cardnum" id="cardNum">1</div><div class="lvl"><b id="lvlName">Starter</b><small id="lvlSub">Full outline</small></div></div>
       <div class="lvlbar" id="lvlBar"></div>
-      <div class="stats"><span>Time <b id="tTime">0:00</b></span><span>Moves <b id="tMoves">0</b></span><span>Hints <b id="tHints">0</b></span><span>Placed <b id="tPlaced">0/32</b></span></div>
+      <div class="stats bench"><span>Time <b id="tTime">0:00</b></span><span>Moves <b id="tMoves">0</b></span><span>Hints <b id="tHints">0</b></span><span>Placed <b id="tPlaced">0/32</b></span></div>
       <div class="topdot" aria-hidden="true"></div>
       <div class="boardwrap" id="board">
         <div class="cells" id="cells"></div>
@@ -196,23 +214,23 @@ textarea{width:100%;min-height:80px;font:inherit;border:1.5px solid var(--line);
       <div>
         <h2>Bricks</h2>
         <div class="tray" id="tray"></div>
-        <div class="row" style="margin-top:10px">
+        <div class="row bench" style="margin-top:10px">
           <button class="btn" id="rotBtn">Turn brick <kbd>R</kbd></button>
           <span class="note" id="orientNote">lying across</span>
         </div>
       </div>
       <div>
-        <h2>Play</h2>
-        <p class="help">Pick a brick, then tap a square. The brick starts on that square, and shifts inward if it would hang off the edge. Turn it by tapping it again in the tray, pressing <kbd>R</kbd>, right-clicking the board, or using Turn brick. Tap a placed brick to pick it up. A dot means the brick came with the card.</p>
-        <p class="help">Keyboard: <kbd>Tab</kbd> to the board, arrows to move, <kbd>Enter</kbd> to place. <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> pick a length. <kbd>Alt</kbd> and an arrow key change the card.</p>
+        <h2 class="bench">Play</h2>
+        <p class="help bench">Pick a brick, then tap a square. The brick starts on that square, and shifts inward if it would hang off the edge. Turn it by tapping it again in the tray, pressing <kbd>R</kbd>, right-clicking the board, or using Turn brick. Tap a placed brick to pick it up. A dot means the brick came with the card.</p>
+        <p class="help bench">Keyboard: <kbd>Tab</kbd> to the board, arrows to move, <kbd>Enter</kbd> to place. <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> pick a length. <kbd>Alt</kbd> and an arrow key change the card.</p>
         <div class="row" style="margin-top:10px">
           <button class="btn" id="undoBtn">Undo <kbd>Z</kbd></button>
           <button class="btn" id="resetBtn">Start over</button>
         </div>
-        <label class="toggle" style="margin-top:12px"><input type="checkbox" id="autoTurn"> Auto-place the turned copies</label>
-        <p class="help" style="margin-top:4px">Test variant: one placement fills all four colours.</p>
+        <label class="toggle bench" style="margin-top:12px"><input type="checkbox" id="autoTurn"> Auto-place the turned copies</label>
+        <p class="help bench" style="margin-top:4px">Test variant: one placement fills all four colours.</p>
       </div>
-      <div>
+      <div class="bench">
         <h2>Stuck?</h2>
         <div class="row">
           <button class="btn" id="hintBtn">Place one brick</button>
@@ -231,6 +249,10 @@ textarea{width:100%;min-height:80px;font:inherit;border:1.5px solid var(--line);
       </div>
     </aside>
   </div>
+  <footer class="zinefoot">
+    <span>Yemeni Blocks · playtest edition</span>
+    <span class="row"><b id="zinePage">1 / 64</b><button class="btn" id="printBtn" type="button">Print</button></span>
+  </footer>
 </div>
 
 <div class="overlay" id="pickOv" hidden>
@@ -466,7 +488,9 @@ function renderHead(){
   const cd=card(); const [n,sub,rule]=LEVELS[cd.l];
   $("cardNum").textContent=cd.n; $("lvlName").textContent=n; $("lvlSub").textContent=`${sub} · ${cd.g.length} starting brick${cd.g.length===1?"":"s"}`;
   $("lvlBar").style.background=`var(--lv${cd.l})`; $("levelRule").textContent=rule;
-  $("brandSub").textContent=`Playtest edition · ${solvedSet.size} of 64 solved`;
+  const zine=document.body.classList.contains("zine");
+  $("brandSub").textContent=zine?"Playtest edition":`Playtest edition · ${solvedSet.size} of 64 solved`;
+  $("zinePage").textContent=`${cd.n} / 64`;
   document.title=`Card ${cd.n} · Yemeni Blocks`;
 }
 function renderAll(){ renderHead(); renderLines(); renderBricks(); renderTray(); renderStats(); renderGhost(null); }
@@ -605,6 +629,17 @@ $("themeBtn").onclick=()=>{
   try { localStorage.setItem("yb-theme", next); } catch(e) {}
   syncThemeButton();
 };
+function setZine(on){
+  document.body.classList.toggle("zine", !!on);
+  $("zineBtn").textContent=on?"Play":"Zine";
+  $("zineBtn").classList.toggle("primary", !!on);
+  $("zineBtn").setAttribute("aria-pressed", on?"true":"false");
+  $("zineBtn").setAttribute("aria-label", on?"Leave zine mode":"Open zine mode");
+  try { localStorage.setItem("yb-zine", on?"1":"0"); } catch(e) {}
+  if (typeof card==="function") renderHead();
+}
+$("zineBtn").onclick=()=>setZine(!document.body.classList.contains("zine"));
+$("printBtn").onclick=()=>window.print();
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{ if(!document.documentElement.getAttribute("data-theme")) syncThemeButton(); });
 document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") persistCurrent(); });
 window.addEventListener("pagehide", persistCurrent);
@@ -613,6 +648,7 @@ function start(){
   let i=0; try{ const v=localStorage.getItem("yb-card"); if(v!==null) i=+v||0; }catch(e){}
   try { if(localStorage.getItem("yb-auto")==="1"){ S.auto=true; $("autoTurn").checked=true; } } catch(e) {}
   loadCard(i); syncThemeButton();
+  try { if (localStorage.getItem("yb-zine")==="1") setZine(true); } catch(e) {}
 }
 start();
 </script>
