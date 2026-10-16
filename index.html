@@ -120,6 +120,11 @@ svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .trayrow{align-items:flex-end}
 .under{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;max-width:600px}
 .underacts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;max-width:600px}
+.morebox{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px;max-width:600px}
+.howto{border-top:1.5px solid var(--line);padding-top:12px}
+.howto summary{cursor:pointer;font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.howto summary:focus-visible{outline:2.5px solid var(--focus);outline-offset:2px}
+.howto .help+.help{margin-top:8px}
 .turnbig{display:inline-flex;align-items:center;gap:10px;padding:9px 14px;font-size:15px}
 .turnbig svg{width:22px;height:22px}
 .selprev{display:inline-flex;align-items:center;justify-content:center;width:84px;height:84px;border:1.5px dashed var(--line);border-radius:8px}
@@ -161,7 +166,7 @@ textarea{width:100%;min-height:80px;font:inherit;border:1.5px solid var(--line);
 body.zine{background:var(--desk)}
 body.zine .wrap{max-width:1080px;margin:28px auto 40px;background:var(--paper);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--ink);padding:22px max(22px,env(safe-area-inset-right,0px)) 18px max(22px,env(safe-area-inset-left,0px))}
 body.zine .main{grid-template-columns:minmax(0,1fr);max-width:none;margin-inline:auto}
-body.zine .boardcol,body.zine .boardwrap,body.zine .under,body.zine .underacts{max-width:none;width:100%}
+body.zine .boardcol,body.zine .boardwrap,body.zine .under,body.zine .underacts,body.zine .morebox{max-width:none;width:100%}
 body.zine .panel{background:transparent;border:0;border-radius:0;padding:4px 0 0;box-shadow:none}
 body.zine .bench{display:none}
 body.zine .zinefoot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px;padding-top:14px;border-top:2px solid var(--ink);font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
@@ -179,13 +184,12 @@ body.zine .zinefoot b{font-weight:500}
 <a class="skip" href="#board">Skip to the board</a>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><div class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div><h1>Yemeni Blocks</h1><span id="brandSub">Playtest edition · 0 of 64 solved</span></div></div>
+    <div class="brand"><div class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div><h1>Yemeni Blocks</h1><span id="brandSub">0 of 64 solved</span></div></div>
     <div class="topbtns">
       <button class="btn" id="prevBtn" aria-label="Previous card">←</button>
       <button class="btn" id="pickBtn">All cards</button>
       <button class="btn" id="nextBtn" aria-label="Next card">→</button>
       <button class="btn" id="zineBtn" type="button" aria-pressed="false" aria-label="Open zine mode">Zine</button>
-      <button class="btn bench" id="logBtn">Playtest log</button>
       <button class="btn" id="themeBtn" type="button" aria-label="Switch to dark theme">Dark</button>
     </div>
   </header>
@@ -211,7 +215,12 @@ body.zine .zinefoot b{font-weight:500}
       <div class="underacts">
         <button class="btn" id="undoBtn">Undo <kbd>Z</kbd></button>
         <button class="btn" id="resetBtn">Start over</button>
+        <button class="btn" id="moreBtn" type="button" aria-expanded="false" aria-controls="moreBox">More</button>
+        <button class="btn primary" id="nextCardBtn" type="button" hidden>Next card</button>
+      </div>
+      <div class="morebox" id="moreBox" hidden>
         <label class="toggle"><input type="checkbox" id="autoTurn"> Auto-place the turned copies</label>
+        <button class="btn" id="logBtn" type="button">Notes</button>
       </div>
       <div class="msg" id="msg" role="status" aria-live="polite"></div>
     </section>
@@ -220,23 +229,18 @@ body.zine .zinefoot b{font-weight:500}
       <div>
         <h2>Bricks</h2>
         <div class="tray" id="tray"></div>
-        <div class="row bench" style="margin-top:10px">
-          <button class="btn" id="rotBtn">Turn brick <kbd>R</kbd></button>
-          <span class="note" id="orientNote">lying across</span>
-        </div>
       </div>
-      <div>
-        <h2 class="bench">Play</h2>
-        <p class="help bench">Pick a brick, then tap a square. The brick starts on that square, and shifts inward if it would hang off the edge. Turn it by tapping it again in the tray, pressing <kbd>R</kbd>, right-clicking the board, or using Turn brick. Tap a placed brick to pick it up. A dot means the brick came with the card.</p>
-        <p class="help bench">Keyboard: <kbd>Tab</kbd> to the board, arrows to move, <kbd>Enter</kbd> to place. <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> pick a length. <kbd>Alt</kbd> and an arrow key change the card.</p>
-      </div>
+      <details class="howto bench">
+        <summary>How to play</summary>
+        <p class="help">Pick a brick, then tap a square. It shifts inward at the edge. Turn it with Turn brick, or tap that brick in the tray again. A dot means it came with the card.</p>
+        <p class="help">Keyboard: arrows move, Enter places, R turns, Z undoes. 1 2 3 pick a length. Alt and an arrow change the card.</p>
+      </details>
       <div class="bench">
         <h2>Stuck?</h2>
         <div class="row">
           <button class="btn" id="hintBtn">Place one brick</button>
           <button class="btn" id="checkBtn">Show wrong bricks</button>
         </div>
-        <div class="row" style="margin-top:8px"><button class="btn" id="giveBtn">Give up and rate</button></div>
       </div>
       <div class="bench">
         <h2>Rules</h2>
@@ -250,7 +254,7 @@ body.zine .zinefoot b{font-weight:500}
     </aside>
   </div>
   <footer class="zinefoot">
-    <span>Yemeni Blocks · playtest edition</span>
+    <span>Yemeni Blocks</span>
     <span class="row"><b id="zinePage">1 / 64</b><button class="btn" id="printBtn" type="button">Print</button></span>
   </footer>
 </div>
@@ -258,7 +262,7 @@ body.zine .zinefoot b{font-weight:500}
 <div class="overlay" id="pickOv" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
     <div class="row" style="justify-content:space-between"><h3 id="pickTitle">Choose a card</h3><button class="btn" data-close>Close</button></div>
-    <div class="legend"><span><i style="background:var(--lv1)"></i>Starter</span><span><i style="background:var(--lv2)"></i>Junior</span><span><i style="background:var(--lv3)"></i>Expert</span><span><i style="background:var(--lv4)"></i>Master</span><span>✓ solved in the log</span></div>
+    <div class="legend"><span><i style="background:var(--lv1)"></i>Starter</span><span><i style="background:var(--lv2)"></i>Junior</span><span><i style="background:var(--lv3)"></i>Expert</span><span><i style="background:var(--lv4)"></i>Master</span><span>✓ solved</span></div>
     <div class="row" id="pickFilters" style="margin-top:10px">
       <button class="btn primary" type="button" data-filter="0">All</button>
       <button class="btn" type="button" data-filter="1">Starter</button>
@@ -288,8 +292,8 @@ body.zine .zinefoot b{font-weight:500}
 
 <div class="overlay" id="logOv" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="logTitle">
-    <div class="row" style="justify-content:space-between"><h3 id="logTitle">Playtest log</h3><button class="btn" data-close>Close</button></div>
-    <p class="help" id="logStatus">Loading saved playtests…</p>
+    <div class="row" style="justify-content:space-between"><h3 id="logTitle">Notes</h3><button class="btn" data-close>Close</button></div>
+    <p class="help" id="logStatus">Notes are kept in this browser.</p>
     <div class="sumgrid" id="sumgrid"></div>
     <div class="tablewrap"><table class="loglist"><thead><tr><th>Card</th><th>Result</th><th>Time</th><th>Hints</th><th>Rating</th><th>Note</th></tr></thead><tbody id="logBody"></tbody></table></div>
     <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn" id="exportBtn" type="button">Download log</button></div>
@@ -475,7 +479,6 @@ function renderTray(){
       b.innerHTML=`<span class="n">${n}</span>`; b.addEventListener("click",()=>{ if(S.sel.c===c && S.sel.L===L && L>1){ rotate(); return; } S.sel.c=c; S.sel.L=L; renderTray(); renderGhost(hoverCell); persistCurrent(); }); row.appendChild(b); });
     T.appendChild(row); }
   const dir = S.sel.L===1 ? "1×1 has no direction" : (S.sel.o==="h"? "lying across" : "standing up");
-  $("orientNote").textContent = dir;
   $("selNote").textContent = `${COLOURS[S.sel.c]} 1×${S.sel.L}, ${dir}`;
   const pv=$("selPrev"); const u=22, a=S.sel.L*u-2, b=u-2; pv.className="c"+S.sel.c;
   pv.style.width=(S.sel.o==="h"?a:b)+"px"; pv.style.height=(S.sel.o==="h"?b:a)+"px";
@@ -483,13 +486,12 @@ function renderTray(){
 }
 function elapsed(){ return S.done ? S.elapsedBefore : S.elapsedBefore + Math.floor((Date.now()-S.start)/1000); }
 function fmt(t){ return Math.floor(t/60)+":"+String(t%60).padStart(2,"0"); }
-function renderStats(){ $("tTime").textContent=fmt(elapsed()); $("tMoves").textContent=S.moves; $("tHints").textContent=S.hints; $("tPlaced").textContent=S.placed.length+"/32"; }
+function renderStats(){ $("tTime").textContent=fmt(elapsed()); $("tMoves").textContent=S.moves; $("tHints").textContent=S.hints; $("tPlaced").textContent=S.placed.length+"/32"; $("nextCardBtn").hidden=!S.done; }
 function renderHead(){
   const cd=card(); const [n,sub,rule]=LEVELS[cd.l];
   $("cardNum").textContent=cd.n; $("lvlName").textContent=n; $("lvlSub").textContent=`${sub} · ${cd.g.length} starting brick${cd.g.length===1?"":"s"}`;
   $("lvlBar").style.background=`var(--lv${cd.l})`; $("levelRule").textContent=rule;
-  const zine=document.body.classList.contains("zine");
-  $("brandSub").textContent=zine?"Playtest edition":`Playtest edition · ${solvedSet.size} of 64 solved`;
+  $("brandSub").textContent=`${solvedSet.size} of 64 solved`;
   $("zinePage").textContent=`${cd.n} / 64`;
   document.title=`Card ${cd.n} · Yemeni Blocks`;
 }
@@ -526,13 +528,14 @@ $("board").addEventListener("mouseleave",()=>renderGhost(null));
 
 /* ---------- controls ---------- */
 function rotate(){ if(S.sel.L===1) return; S.sel.o = S.sel.o==="h"?"v":"h"; renderTray(); renderGhost(hoverCell); persistCurrent(); }
-$("rotBtn").onclick=rotate; $("turnBig").onclick=rotate; $("undoBtn").onclick=undo;
+$("turnBig").onclick=rotate; $("undoBtn").onclick=undo; $("nextCardBtn").onclick=()=>loadCard(S.idx+1);
 $("board").addEventListener("contextmenu",e=>{ e.preventDefault(); rotate(); });
 $("resetBtn").onclick=()=>{
   if (S.done){ freshCard(); setMsg("Cleared. This card is ready to play again."); afterChange(); return; }
   pushUndo(); S.placed=S.placed.filter(b=>b.given); S.moves++; setMsg("Cleared. Undo brings it back."); afterChange();
 };
-$("hintBtn").onclick=hint; $("checkBtn").onclick=showWrong; $("giveBtn").onclick=()=>openRate(false);
+$("hintBtn").onclick=hint; $("checkBtn").onclick=showWrong;
+$("moreBtn").onclick=()=>{ const show=$("moreBox").hidden; $("moreBox").hidden=!show; $("moreBtn").setAttribute("aria-expanded", show?"true":"false"); $("moreBtn").classList.toggle("primary", show); };
 $("autoTurn").onchange=e=>{ S.auto=e.target.checked; try{ localStorage.setItem("yb-auto", S.auto?"1":"0"); }catch(err){} renderGhost(hoverCell); };
 $("prevBtn").onclick=()=>loadCard(S.idx-1); $("nextBtn").onclick=()=>loadCard(S.idx+1);
 document.addEventListener("keydown",e=>{
@@ -599,7 +602,7 @@ $("exportBtn").onclick=()=>{
 };
 function renderLog(){
   const rows=readLog();
-  $("logStatus").textContent = rows.length? `${rows.length} playtest${rows.length===1?"":"s"} saved in this browser.` : "No playtests yet. Solve or rate a card and it shows up here.";
+  $("logStatus").textContent = rows.length? `${rows.length} note${rows.length===1?"":"s"} saved in this browser.` : "No notes yet. They stay in this browser.";
   const sg=$("sumgrid"); sg.innerHTML="";
   [1,2,3,4].forEach(l=>{ const r=rows.filter(x=>x.level===l); const s=r.filter(x=>x.solved); const avg=s.length? Math.round(s.reduce((a,x)=>a+x.seconds,0)/s.length):0;
     const cnt=k=>r.filter(x=>x.rating===k).length;
@@ -629,14 +632,17 @@ $("themeBtn").onclick=()=>{
   try { localStorage.setItem("yb-theme", next); } catch(e) {}
   syncThemeButton();
 };
-function setZine(on){
+function applyZine(on){
   document.body.classList.toggle("zine", !!on);
   $("zineBtn").textContent=on?"Play":"Zine";
   $("zineBtn").classList.toggle("primary", !!on);
   $("zineBtn").setAttribute("aria-pressed", on?"true":"false");
   $("zineBtn").setAttribute("aria-label", on?"Leave zine mode":"Open zine mode");
-  try { localStorage.setItem("yb-zine", on?"1":"0"); } catch(e) {}
   if (typeof card==="function") renderHead();
+}
+function setZine(on){
+  applyZine(on);
+  try { localStorage.setItem("yb-zine", on?"1":"0"); } catch(e) {}
 }
 $("zineBtn").onclick=()=>setZine(!document.body.classList.contains("zine"));
 $("printBtn").onclick=()=>window.print();
@@ -648,7 +654,9 @@ function start(){
   let i=0; try{ const v=localStorage.getItem("yb-card"); if(v!==null) i=+v||0; }catch(e){}
   try { if(localStorage.getItem("yb-auto")==="1"){ S.auto=true; $("autoTurn").checked=true; } } catch(e) {}
   loadCard(i); syncThemeButton();
-  try { if (localStorage.getItem("yb-zine")==="1") setZine(true); } catch(e) {}
+  let saved=null; try { saved=localStorage.getItem("yb-zine"); } catch(e) {}
+  if (saved==="1") applyZine(true);
+  else if (saved!=="0" && matchMedia("(max-width:860px)").matches) applyZine(true);
 }
 start();
 </script>
