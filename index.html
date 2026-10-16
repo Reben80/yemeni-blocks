@@ -119,6 +119,7 @@ svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .tb.v[data-l="2"]{width:26px;height:50px}.tb.v[data-l="3"]{width:26px;height:74px}
 .trayrow{align-items:flex-end}
 .under{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;max-width:600px}
+.underacts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;max-width:600px}
 .turnbig{display:inline-flex;align-items:center;gap:10px;padding:9px 14px;font-size:15px}
 .turnbig svg{width:22px;height:22px}
 .selprev{display:inline-flex;align-items:center;justify-content:center;width:84px;height:84px;border:1.5px dashed var(--line);border-radius:8px}
@@ -160,7 +161,7 @@ textarea{width:100%;min-height:80px;font:inherit;border:1.5px solid var(--line);
 body.zine{background:var(--desk)}
 body.zine .wrap{max-width:1080px;margin:28px auto 40px;background:var(--paper);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--ink);padding:22px max(22px,env(safe-area-inset-right,0px)) 18px max(22px,env(safe-area-inset-left,0px))}
 body.zine .main{grid-template-columns:minmax(0,1fr);max-width:none;margin-inline:auto}
-body.zine .boardcol,body.zine .boardwrap,body.zine .under{max-width:none;width:100%}
+body.zine .boardcol,body.zine .boardwrap,body.zine .under,body.zine .underacts{max-width:none;width:100%}
 body.zine .panel{background:transparent;border:0;border-radius:0;padding:4px 0 0;box-shadow:none}
 body.zine .bench{display:none}
 body.zine .zinefoot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px;padding-top:14px;border-top:2px solid var(--ink);font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
@@ -169,7 +170,7 @@ body.zine .zinefoot b{font-weight:500}
 @media print{
   body.zine{background:#fff}
   body.zine .wrap{box-shadow:none;border:0;margin:0;max-width:none}
-  body.zine .topbtns,body.zine .under,body.zine .panel .row,body.zine .zinefoot button,body.zine .skip{display:none}
+  body.zine .topbtns,body.zine .under,body.zine .underacts,body.zine .panel .row,body.zine .zinefoot button,body.zine .skip{display:none}
   .brick,.lvlbar,.c0,.c1,.c2,.c3,.brand .mark,.brand .mark i{print-color-adjust:exact;-webkit-print-color-adjust:exact}
 }
 </style>
@@ -207,6 +208,11 @@ body.zine .zinefoot b{font-weight:500}
         <button class="btn turnbig" id="turnBig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></svg>Turn brick</button>
         <span class="note" id="selNote"></span>
       </div>
+      <div class="underacts">
+        <button class="btn" id="undoBtn">Undo <kbd>Z</kbd></button>
+        <button class="btn" id="resetBtn">Start over</button>
+        <label class="toggle"><input type="checkbox" id="autoTurn"> Auto-place the turned copies</label>
+      </div>
       <div class="msg" id="msg" role="status" aria-live="polite"></div>
     </section>
 
@@ -223,12 +229,6 @@ body.zine .zinefoot b{font-weight:500}
         <h2 class="bench">Play</h2>
         <p class="help bench">Pick a brick, then tap a square. The brick starts on that square, and shifts inward if it would hang off the edge. Turn it by tapping it again in the tray, pressing <kbd>R</kbd>, right-clicking the board, or using Turn brick. Tap a placed brick to pick it up. A dot means the brick came with the card.</p>
         <p class="help bench">Keyboard: <kbd>Tab</kbd> to the board, arrows to move, <kbd>Enter</kbd> to place. <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> pick a length. <kbd>Alt</kbd> and an arrow key change the card.</p>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" id="undoBtn">Undo <kbd>Z</kbd></button>
-          <button class="btn" id="resetBtn">Start over</button>
-        </div>
-        <label class="toggle bench" style="margin-top:12px"><input type="checkbox" id="autoTurn"> Auto-place the turned copies</label>
-        <p class="help bench" style="margin-top:4px">Test variant: one placement fills all four colours.</p>
       </div>
       <div class="bench">
         <h2>Stuck?</h2>
@@ -420,7 +420,7 @@ function validate(){
 }
 function checkSolved(){
   const {problems,bad} = validate();
-  if (!problems.length){ S.elapsedBefore=elapsed(); S.done=true; renderStats(); setMsg("Solved. Every rule holds.", "ok"); openRate(true); }
+  if (!problems.length){ S.elapsedBefore=elapsed(); S.done=true; renderStats(); setMsg("Solved. Every rule holds.", "ok"); const n=card().n; if(!solvedSet.has(n)){ solvedSet.add(n); try{ localStorage.setItem("yb-solved", JSON.stringify([...solvedSet])); }catch(e){} } renderHead(); }
   else { renderBricks(bad); setMsg("Board full, but: " + problems.join(" "), "bad"); }
 }
 
